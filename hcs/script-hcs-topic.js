@@ -63,9 +63,18 @@ async function scriptHcsTopic() {
   // Get the transaction receipt
   const topicCreateTxReceipt = await topicCreateTxSubmitted.getReceipt(client);
 
-  // Get the topic ID
+  // Check the transaction status and log
   const topicId = topicCreateTxReceipt.topicId;
-  logger.log('topicId:', topicId.toString());
+  if (topicCreateTxReceipt.status.toString() === 'SUCCESS') {
+    logger.log('✅ Topic created successfully. Topic ID:', topicId.toString());
+    logger.log(
+      `Transaction was successful. View it at: https://hashscan.io/testnet/transaction/${topicCreateTxId}`,
+    );
+  } else {
+    logger.error(
+      `❌ Transaction failed with status: ${topicCreateTxReceipt.status}`,
+    );
+  }
 
   // NOTE: Publish a message to the Hedera Consensus Service (HCS) topic
   await logger.logSection('Publish message to HCS topic');
