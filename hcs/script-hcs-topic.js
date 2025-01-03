@@ -63,8 +63,9 @@ async function scriptHcsTopic() {
   // Get the transaction receipt
   const topicCreateTxReceipt = await topicCreateTxSubmitted.getReceipt(client);
 
-  // Check the transaction status and log
+  // Get the topic ID
   const topicId = topicCreateTxReceipt.topicId;
+  // Get the topic ID
   if (topicCreateTxReceipt.status.toString() === 'SUCCESS') {
     logger.log('✅ Topic created successfully. Topic ID:', topicId.toString());
     logger.log(
