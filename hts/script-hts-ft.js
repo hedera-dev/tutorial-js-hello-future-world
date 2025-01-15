@@ -21,7 +21,7 @@ async function scriptHtsFungibleToken() {
   logger.logStart('Hello Future World - HTS Fungible Token - start');
 
   // Read in environment variables from `.env` file in parent directory
-  dotenv.config({ path: '../.env' });
+  dotenv.config({ path: './.env' });
   logger.log('Read .env file');
 
   // Initialize the operator account
@@ -45,27 +45,36 @@ async function scriptHtsFungibleToken() {
   // NOTE: Create an HTS token
   await logger.logSection('Creating new HTS token');
   const tokenCreateTx = await new TokenCreateTransaction()
+    //Set the transaction memo
     .setTransactionMemo(`Hello Future World token - ${logger.version}`)
+    // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
     .setTokenType(TokenType.FungibleCommon)
+    // Configure token options: name, symbol, decimals, initial supply
     .setTokenName(`${logger.scriptId} coin`)
+    // Set the token symbol
     .setTokenSymbol(logger.scriptId.toUpperCase())
+    // Set the token decimals to 2
     .setDecimals(2)
+    // Set the initial supply to 1,000,000
     .setInitialSupply(1_000_000)
+    // Set the treasury account to the operator account. Configure token access permissions: treasury account, admin, freezing
     .setTreasuryAccountId(operatorId)
+    // Set the freeze default value to false
     .setFreezeDefault(false)
+    //Freeze the transaction and prepare for signing
     .freezeWith(client);
-
+  // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
   const tokenCreateTxId = tokenCreateTx.transactionId;
   logger.log('The token create transaction ID: ', tokenCreateTxId.toString());
-
+  // Sign the transaction with the private key of the treasury account (operator key)
   const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
+  // Submit the transaction to the Hedera Testnet
   const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);
 
   // Get the transaction receipt and check the status
   const tokenCreateTxReceipt = await tokenCreateTxSubmitted.getReceipt(client);
-
+  const tokenId = tokenCreateTxReceipt.tokenId;
   if (tokenCreateTxReceipt.status.toString() === 'SUCCESS') {
-    const tokenId = tokenCreateTxReceipt.tokenId;
     logger.log('✅ Token created successfully. Token ID:', tokenId.toString());
     logger.log(
       `Transaction was successful. View it at: https://hashscan.io/testnet/transaction/${tokenCreateTxId}`,
@@ -81,6 +90,7 @@ async function scriptHtsFungibleToken() {
   // Verify transactions using Hashscan
   await logger.logSection('View the token on HashScan');
   const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenCreateTxReceipt.tokenId.toString()}`;
+
   logger.log(
     'Paste URL in browser:\n',
     ...logger.applyAnsi('URL', tokenVerifyHashscanUrl),
@@ -91,6 +101,7 @@ async function scriptHtsFungibleToken() {
 
   // NOTE: Verify token using Mirror Node API
   await logger.logSection('Get token data from the Hedera Mirror Node');
+
   const tokenVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenCreateTxReceipt.tokenId.toString()}`;
   logger.log(
     'The token Hedera Mirror Node API URL:\n',
