@@ -21,7 +21,7 @@ async function scriptHtsFungibleToken() {
   logger.logStart('Hello Future World - HTS Fungible Token - start');
 
   // Read in environment variables from `.env` file in parent directory
-  dotenv.config({ path: './.env' });
+  dotenv.config({ path: '../.env' });
   logger.log('Read .env file');
 
   // Initialize the operator account
